@@ -24,7 +24,7 @@ def _get_user(request: Request) -> dict | None:
 def _require_user(request: Request) -> dict:
     user = _get_user(request)
     if not user:
-        raise HTTPException(status_code=302, detail="Login necessario")
+        raise HTTPException(status_code=401, detail="Login necessario")
     return user
 
 

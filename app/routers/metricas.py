@@ -13,12 +13,12 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 def _require_user(request: Request) -> dict:
     token = request.cookies.get("access_token")
     if not token:
-        raise HTTPException(status_code=302, detail="Login necessario")
+        raise HTTPException(status_code=401, detail="Login necessario")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return {"username": payload.get("sub"), "role": payload.get("role")}
     except Exception:
-        raise HTTPException(status_code=302, detail="Token invalido")
+        raise HTTPException(status_code=401, detail="Token invalido")
 
 
 @router.get("/", response_class=HTMLResponse)
