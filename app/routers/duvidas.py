@@ -56,10 +56,15 @@ async def enviar_pergunta(
             headers=headers,
         )
 
-    if resp.status_code != 200:
+    if resp.status_code < 200 or resp.status_code >= 300:
+        try:
+            body_erro = resp.json()
+            mensagem = body_erro.get("detail") or body_erro.get("erro") or "Erro ao processar"
+        except Exception:
+            mensagem = f"Erro {resp.status_code} do servidor"
         return JSONResponse(
             status_code=resp.status_code,
-            content={"erro": resp.json().get("detail", "Erro ao processar a pergunta")},
+            content={"erro": mensagem},
         )
 
     data = resp.json()

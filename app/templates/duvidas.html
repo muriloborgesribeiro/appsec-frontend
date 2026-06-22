@@ -175,7 +175,7 @@
         })
         .then(function(resp) {
             return resp.json().then(function(data) {
-                if (!resp.ok) throw new Error(data.erro || 'Erro ao processar');
+                if (!resp.ok) throw new Error(data.erro || data.detail || 'Erro ao processar');
                 return data;
             });
         })
