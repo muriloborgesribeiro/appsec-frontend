@@ -61,7 +61,7 @@ async def forbidden_handler(request: Request, exc: HTTPException):
     )
 
 
-from app.routers import diagnostico, metricas, auth
+from app.routers import diagnostico, metricas, auth  # noqa: E402
 
 app.include_router(diagnostico.router)
 app.include_router(metricas.router)
