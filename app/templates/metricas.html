@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Métricas{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12 text-center mb-4">
+        <h3>📊 Métricas dos Modelos</h3>
+        <p class="text-muted">Comparação de desempenho: KNN vs SVM vs Alvarado Score</p>
+    </div>
+</div>
+
+{% if erros %}
+<div class="alert alert-warning">
+    {% for erro in erros %}<p class="mb-0">{{ erro }}</p>{% endfor %}
+</div>
+{% endif %}
+
+{% if metricas %}
+<!-- Resumo -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-modelo text-center">
+            <div class="card-body">
+                <h6>Configuração Selecionada</h6>
+                <strong>{{ metricas.get("config_selecionada", "?") }}</strong>
+                <p class="small text-muted mt-1">{{ metricas.get("config_nome", "") }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-modelo text-center">
+            <div class="card-body">
+                <h6>Acurácia KNN (teste)</h6>
+                <h3 class="text-primary">{{ "%.1f"|format(metricas.get("acuracia_teste", 0) * 100) }}%</h3>
+                <p class="small text-muted">k={{ metricas.get("k_otimo", "?") }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-modelo text-center">
+            <div class="card-body">
+                <h6>Pacientes no dataset</h6>
+                <h3>{{ metricas.get("n_pacientes", 0) }}</h3>
+                <p class="small text-muted">Treino: {{ metricas.get("n_treino", 0) }} | Teste: {{ metricas.get("n_teste", 0) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Avaliação KNN -->
+{% if metricas.get("avaliacao_knn") %}
+<div class="card card-modelo mb-4">
+    <div class="card-header bg-primary text-white"><h5 class="mb-0">🤖 KNN — Avaliação</h5></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><td>VP (Verdadeiros Positivos)</td><td><strong>{{ metricas.avaliacao_knn.vp }}</strong></td></tr>
+                    <tr><td>VN (Verdadeiros Negativos)</td><td><strong>{{ metricas.avaliacao_knn.vn }}</strong></td></tr>
+                    <tr><td>FP (Falsos Positivos)</td><td><strong>{{ metricas.avaliacao_knn.fp }}</strong></td></tr>
+                    <tr><td>FN (Falsos Negativos)</td><td><strong>{{ metricas.avaliacao_knn.fn }}</strong></td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><td>Acurácia</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_knn.acuracia * 100) }}%</strong></td></tr>
+                    <tr><td>Sensibilidade</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_knn.sensibilidade * 100) }}%</strong></td></tr>
+                    <tr><td>Especificidade</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_knn.especificidade * 100) }}%</strong></td></tr>
+                    <tr><td>VPP</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_knn.vpp * 100) }}%</strong></td></tr>
+                    <tr><td>VPN</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_knn.vpn * 100) }}%</strong></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Avaliação SVM -->
+{% if metricas.get("avaliacao_svm") %}
+<div class="card card-modelo mb-4">
+    <div class="card-header text-white" style="background: #6a1b9a;"><h5 class="mb-0">🧠 SVM — Avaliação (kernel={{ metricas.avaliacao_svm.kernel }}, C={{ metricas.avaliacao_svm.C }})</h5></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><td>VP (Verdadeiros Positivos)</td><td><strong>{{ metricas.avaliacao_svm.vp }}</strong></td></tr>
+                    <tr><td>VN (Verdadeiros Negativos)</td><td><strong>{{ metricas.avaliacao_svm.vn }}</strong></td></tr>
+                    <tr><td>FP (Falsos Positivos)</td><td><strong>{{ metricas.avaliacao_svm.fp }}</strong></td></tr>
+                    <tr><td>FN (Falsos Negativos)</td><td><strong>{{ metricas.avaliacao_svm.fn }}</strong></td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><td>Acurácia</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_svm.acuracia * 100) }}%</strong></td></tr>
+                    <tr><td>Sensibilidade</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_svm.sensibilidade * 100) }}%</strong></td></tr>
+                    <tr><td>Especificidade</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_svm.especificidade * 100) }}%</strong></td></tr>
+                    <tr><td>VPP</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_svm.vpp * 100) }}%</strong></td></tr>
+                    <tr><td>VPN</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_svm.vpn * 100) }}%</strong></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Avaliação Alvarado -->
+{% if metricas.get("avaliacao_alvarado") %}
+<div class="card card-modelo mb-4">
+    <div class="card-header bg-success text-white"><h5 class="mb-0">📋 Alvarado Score — Avaliação</h5></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><td>VP (Verdadeiros Positivos)</td><td><strong>{{ metricas.avaliacao_alvarado.vp }}</strong></td></tr>
+                    <tr><td>VN (Verdadeiros Negativos)</td><td><strong>{{ metricas.avaliacao_alvarado.vn }}</strong></td></tr>
+                    <tr><td>FP (Falsos Positivos)</td><td><strong>{{ metricas.avaliacao_alvarado.fp }}</strong></td></tr>
+                    <tr><td>FN (Falsos Negativos)</td><td><strong>{{ metricas.avaliacao_alvarado.fn }}</strong></td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><td>Acurácia</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_alvarado.acuracia * 100) }}%</strong></td></tr>
+                    <tr><td>Sensibilidade</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_alvarado.sensibilidade * 100) }}%</strong></td></tr>
+                    <tr><td>Especificidade</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_alvarado.especificidade * 100) }}%</strong></td></tr>
+                    <tr><td>VPP</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_alvarado.vpp * 100) }}%</strong></td></tr>
+                    <tr><td>VPN</td><td><strong>{{ "%.1f"|format(metricas.avaliacao_alvarado.vpn * 100) }}%</strong></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Curvas ROC/PR -->
+{% if metricas.get("curvas_roc_pr") %}
+<div class="card card-modelo mb-4">
+    <div class="card-header bg-warning text-dark"><h5 class="mb-0">📈 Curvas ROC e Precision-Recall</h5></div>
+    <div class="card-body">
+        <div class="row">
+            {% for modelo, curva in metricas.curvas_roc_pr.items() %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ modelo|upper }}</h6>
+                        <p class="small mb-1">AUC-ROC: <strong>{{ "%.3f"|format(curva.auc_roc) }}</strong></p>
+                        <p class="small mb-1">Avg Precision: <strong>{{ "%.3f"|format(curva.average_precision) }}</strong></p>
+                        <p class="small mb-0">Limiar ótimo: <strong>{{ "%.2f"|format(curva.limiar_otimo) }}</strong></p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Imagens -->
+{% if imagens_disponiveis.roc_comparativa or imagens_disponiveis.pr_comparativa %}
+<div class="card card-modelo mb-4">
+    <div class="card-header bg-secondary text-white"><h5 class="mb-0">🖼️ Gráficos Comparativos</h5></div>
+    <div class="card-body">
+        <div class="row">
+            {% if imagens_disponiveis.roc_comparativa %}
+            <div class="col-md-6 mb-3">
+                <img src="/static/diagnostico/img/roc_comparativa.png" class="img-fluid rounded" alt="ROC Comparativa">
+            </div>
+            {% endif %}
+            {% if imagens_disponiveis.pr_comparativa %}
+            <div class="col-md-6 mb-3">
+                <img src="/static/diagnostico/img/pr_comparativa.png" class="img-fluid rounded" alt="PR Comparativa">
+            </div>
+            {% endif %}
+            {% if imagens_disponiveis.confusao_knn %}
+            <div class="col-md-6 mb-3">
+                <img src="/static/diagnostico/img/confusion_matrix_knn.png" class="img-fluid rounded" alt="Matriz de Confusão KNN">
+            </div>
+            {% endif %}
+            {% if imagens_disponiveis.confusao_svm %}
+            <div class="col-md-6 mb-3">
+                <img src="/static/diagnostico/img/confusion_matrix_svm.png" class="img-fluid rounded" alt="Matriz de Confusão SVM">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <h5>ℹ️ Nenhuma métrica disponível</h5>
+    <p class="mb-0">Execute <code>python setup.py</code> no backend para treinar os modelos e gerar as métricas.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Histórico{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-4">📜 Histórico de Avaliações</h3>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="/diagnosticos/historico" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Data início</label>
+                        <input type="date" class="form-control" name="data_inicio" value="{{ filtros.data_inicio or '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Data fim</label>
+                        <input type="date" class="form-control" name="data_fim" value="{{ filtros.data_fim or '' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Alvarado</label>
+                        <select class="form-select" name="classificacao">
+                            <option value="">Todas</option>
+                            <option value="baixo" {{ 'selected' if filtros.classificacao == 'baixo' }}>Baixo</option>
+                            <option value="moderado" {{ 'selected' if filtros.classificacao == 'moderado' }}>Moderado</option>
+                            <option value="alto" {{ 'selected' if filtros.classificacao == 'alto' }}>Alto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">KNN</label>
+                        <select class="form-select" name="resultado_knn">
+                            <option value="">Todos</option>
+                            <option value="1" {{ 'selected' if filtros.resultado_knn == '1' }}>Apendicite</option>
+                            <option value="0" {{ 'selected' if filtros.resultado_knn == '0' }}>Sem Apendicite</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">SVM</label>
+                        <select class="form-select" name="resultado_svm">
+                            <option value="">Todos</option>
+                            <option value="1" {{ 'selected' if filtros.resultado_svm == '1' }}>Apendicite</option>
+                            <option value="0" {{ 'selected' if filtros.resultado_svm == '0' }}>Sem Apendicite</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                        <a href="/diagnosticos/historico" class="btn btn-outline-secondary">Limpar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if registros %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Sintomas</th>
+                        <th>Sinais</th>
+                        <th>Alvarado</th>
+                        <th>KNN</th>
+                        <th>SVM</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr id="row-{{ r.id }}">
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.created_at[:16] if r.created_at else '' }}</td>
+                        <td style="font-size:0.85rem; white-space:nowrap">
+                            {% if r.dor_migratoria %}Dor migratória para FID<br>{% endif %}
+                            {% if r.anorexia %}Anorexia (perda de apetite)<br>{% endif %}
+                            {% if r.nauseas_vomitos %}Náuseas ou vômitos<br>{% endif %}
+                            {% if r.dor_fid %}Dor à palpação em FID{% endif %}
+                        </td>
+                        <td style="font-size:0.85rem; white-space:nowrap">
+                            {% if r.descompressao_dolorosa %}Descompressão dolorosa (Blumberg)<br>{% endif %}
+                            {{ r.temperatura }} °C<br>
+                            {{ r.leucocitos }}/mm³ leucócitos<br>
+                            {% if r.neutrofilia %}Neutrofilia (desvio à esquerda){% endif %}
+                        </td>
+                        <td>
+                            {% if r.alvarado_score is not none %}
+                            {{ r.alvarado_score }}/10
+                            <span class="badge bg-{{ 'success' if r.alvarado_classificacao == 'baixo' else ('warning' if r.alvarado_classificacao == 'moderado' else 'danger') }}">
+                                {{ r.alvarado_classificacao }}
+                            </span>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if r.predicao_knn is not none %}
+                            {{ "Apendicite" if r.predicao_knn == 1 else "Sem Apendicite" }}
+                            <span class="badge bg-{{ 'danger' if r.predicao_knn == 1 else 'success' }}">{{ "%.0f"|format(r.probabilidade_knn * 100) }}%</span>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if r.predicao_svm is not none %}
+                            {{ "Apendicite" if r.predicao_svm == 1 else "Sem Apendicite" }}
+                            <span class="badge bg-{{ 'danger' if r.predicao_svm == 1 else 'success' }}">{{ "%.0f"|format(r.probabilidade_svm * 100) }}%</span>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="confirmarExclusao({{ r.id }})" title="Remover diagnóstico">
+                                <i class="bi bi-trash"></i> Remover
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            Nenhuma avaliação encontrada para o filtro utilizado.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function confirmarExclusao(id) {
+    if (!confirm("Tem certeza que deseja remover o diagn\u00f3stico #" + id + "?")) {
+        return;
+    }
+    fetch("/api/v1/diagnosticos/" + id, { method: "DELETE" })
+        .then(function (resp) {
+            if (resp.status === 204) {
+                var row = document.getElementById("row-" + id);
+                if (row) {
+                    row.style.transition = "background 0.3s";
+                    row.style.background = "#f8d7da";
+                    setTimeout(function () { row.remove(); }, 300);
+                }
+            } else if (resp.status === 404) {
+                alert("Diagn\u00f3stico #" + id + " j\u00e1 foi removido.");
+                location.reload();
+            } else {
+                alert("Erro ao remover diagn\u00f3stico #" + id + ". Tente novamente.");
+            }
+        })
+        .catch(function () {
+            alert("Erro de conex\u00e3o ao tentar remover diagn\u00f3stico #" + id + ".");
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Resultado{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12 text-center mb-4">
+        <h3>📊 Resultado da Avaliação</h3>
+        <p class="text-muted">Comparação entre os três métodos lado a lado</p>
+        <div class="alert alert-warning small">
+            AVISO: Estes resultados são gerados por modelos de Machine Learning (KNN e SVM) treinados no dataset Regensburg (Marcinkevics et al., 2023). NÃO substituem avaliação médica presencial. Sistema exclusivamente didático — disciplina de Agentes Inteligentes (UFG).
+        </div>
+    </div>
+</div>
+
+{% if erro %}
+<div class="alert alert-danger">{{ erro }}</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Alvarado Score -->
+    <div class="col-md-4">
+        <div class="card card-modelo h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">📋 Alvarado Score</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted small">Regra clínica determinística (Alvarado, 1986)</p>
+                <div class="probabilidade">{{ alvarado.score }} / 10</div>
+                <span class="badge badge-risco bg-{{ alvarado.cor }}">{{ alvarado.label }}</span>
+                <hr>
+                <p class="small text-start">{{ alvarado.interpretacao }}</p>
+                <p class="small text-start"><strong>Conduta:</strong> {{ alvarado.conduta }}</p>
+                <div class="text-start small">
+                    <strong>Detalhamento:</strong>
+                    <ul class="list-unstyled mt-2">
+                        {% for item in alvarado.detalhamento %}
+                        <li>{{ "✅" if item.presente else "❌" }} {{ item.criterio }} <span class="text-muted">({{ item.pontos }}/{{ item.pontos_max }} pts)</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KNN -->
+    <div class="col-md-4">
+        <div class="card card-modelo h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">🤖 KNN — Machine Learning</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if knn.erro %}
+                    <div class="alert alert-warning">{{ knn.erro }}</div>
+                {% else %}
+                    <p class="text-muted small">k={{ knn.k_vizinhos }} vizinhos (Cover & Hart, 1967)</p>
+                    <div class="probabilidade">{{ knn.probabilidade_percentual }}</div>
+                    <span class="badge badge-risco bg-{{ 'danger' if knn.classe_predita == 1 else 'success' }}">
+                        {{ knn.label_predita }}
+                    </span>
+                    <hr>
+                    <p class="small"><strong>Confiança:</strong> {{ knn.confianca }}</p>
+                    <p class="small"><strong>Acurácia do modelo:</strong> {{ "%.1f"|format(knn.acuracia_modelo * 100) }}%</p>
+                    <p class="small"><strong>Distância média aos vizinhos:</strong> {{ "%.4f"|format(knn.distancia_media_vizinhos) }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- SVM -->
+    <div class="col-md-4">
+        <div class="card card-modelo h-100">
+            <div class="card-header bg-purple text-white" style="background: #6a1b9a;">
+                <h5 class="mb-0">🧠 SVM — Support Vector Machine</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if svm.erro %}
+                    <div class="alert alert-warning">{{ svm.erro }}</div>
+                {% else %}
+                    <p class="text-muted small">kernel={{ svm.kernel }}, C={{ svm.C }} (Cortes & Vapnik, 1995)</p>
+                    <div class="probabilidade">{{ svm.probabilidade_percentual }}</div>
+                    <span class="badge badge-risco bg-{{ 'danger' if svm.classe_predita == 1 else 'success' }}">
+                        {{ svm.label_predita }}
+                    </span>
+                    <hr>
+                    <p class="small"><strong>Confiança:</strong> {{ svm.confianca }}</p>
+                    <p class="small"><strong>Acurácia do modelo:</strong> {{ "%.1f"|format(svm.acuracia_modelo * 100) }}%</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="/diagnosticos/" class="btn btn-outline-primary">🔄 Nova Avaliação</a>
+        <a href="/metricas/" class="btn btn-outline-secondary">📊 Ver Métricas dos Modelos</a>
+    </div>
+</div>
+{% endblock %}

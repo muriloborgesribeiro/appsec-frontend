@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Avaliar Paciente{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card card-modelo mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">📋 Formulário Clínico — Escore de Alvarado</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Preencha os 8 critérios do Escore de Alvarado (1986) para estimar o risco de apendicite.
+                    Os resultados serão comparados com os modelos KNN e SVM treinados no dataset Regensburg.
+                </p>
+
+                <form method="POST" action="/diagnosticos/avaliar">
+                    <h5 class="mb-3">Sintomas (S)</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="dor_migratoria" name="dor_migratoria">
+                                <label class="form-check-label" for="dor_migratoria">Dor migratória para FID</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="anorexia" name="anorexia">
+                                <label class="form-check-label" for="anorexia">Anorexia (perda de apetite)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="nauseas_vomitos" name="nauseas_vomitos">
+                                <label class="form-check-label" for="nauseas_vomitos">Náuseas ou vômitos</label>
+                            </div>
+
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="dor_fid" name="dor_fid">
+                                <label class="form-check-label" for="dor_fid">Dor à palpação em FID</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Sinais (S) & Laboratorial (L)</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="descompressao_dolorosa" name="descompressao_dolorosa">
+                                <label class="form-check-label" for="descompressao_dolorosa">Descompressão dolorosa (Blumberg)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="neutrofilia" name="neutrofilia">
+                                <label class="form-check-label" for="neutrofilia">Neutrofilia (desvio à esquerda)</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <label for="temperatura" class="form-label">Temperatura axilar (°C)</label>
+                            <input type="number" class="form-control" id="temperatura" name="temperatura" step="0.1" value="36.5" min="35" max="42">
+                            <div class="form-text">> 37.3°C pontua 1 ponto</div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="leucocitos" class="form-label">Leucócitos (/mm³)</label>
+                            <input type="number" class="form-control" id="leucocitos" name="leucocitos" value="8000" min="1000" max="50000">
+                            <div class="form-text">> 10.000/mm³ pontua 2 pontos</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            🔬 Calcular Risco
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
