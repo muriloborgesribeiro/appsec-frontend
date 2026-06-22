@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import TEMPLATES_DIR, STATIC_DIR, CORS_ORIGINS
+from app.config import BACKEND_URL, TEMPLATES_DIR, STATIC_DIR, CORS_ORIGINS
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
@@ -14,6 +14,7 @@ _WEB_PATHS = {
     "/auth/login-page",
     "/diagnosticos/",
     "/diagnosticos/historico",
+    "/duvidas/",
     "/metricas/",
 }
 
@@ -61,11 +62,17 @@ async def forbidden_handler(request: Request, exc: HTTPException):
     )
 
 
-from app.routers import diagnostico, metricas, auth  # noqa: E402
+from app.routers import diagnostico, metricas, auth, duvidas  # noqa: E402
 
 app.include_router(diagnostico.router)
 app.include_router(metricas.router)
 app.include_router(auth.router)
+app.include_router(duvidas.router)
+
+
+@app.get("/backend-docs")
+async def backend_docs():
+    return RedirectResponse(url=f"{BACKEND_URL}/docs")
 
 
 @app.get("/")
