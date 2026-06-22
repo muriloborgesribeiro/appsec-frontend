@@ -41,11 +41,15 @@ async def enviar_pergunta(
     try:
         body = await request.json()
     except Exception:
-        return JSONResponse(status_code=400, content={"erro": "Tente novamente por favor"})
+        return JSONResponse(
+            status_code=400, content={"erro": "Tente novamente por favor"}
+        )
 
     pergunta = body.get("pergunta", "").strip()
     if not pergunta:
-        return JSONResponse(status_code=400, content={"erro": "Tente novamente por favor"})
+        return JSONResponse(
+            status_code=400, content={"erro": "Tente novamente por favor"}
+        )
 
     token = request.cookies.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
@@ -59,12 +63,18 @@ async def enviar_pergunta(
                 timeout=60,
             )
     except Exception:
-        return JSONResponse(status_code=502, content={"erro": "Tente novamente por favor"})
+        return JSONResponse(
+            status_code=502, content={"erro": "Tente novamente por favor"}
+        )
 
     if resp.status_code < 200 or resp.status_code >= 300:
         try:
             body_erro = resp.json()
-            mensagem = body_erro.get("detail") or body_erro.get("erro") or "Tente novamente por favor"
+            mensagem = (
+                body_erro.get("detail")
+                or body_erro.get("erro")
+                or "Tente novamente por favor"
+            )
         except Exception:
             mensagem = "Tente novamente por favor"
         return JSONResponse(
@@ -75,6 +85,8 @@ async def enviar_pergunta(
     try:
         data = resp.json()
     except Exception:
-        return JSONResponse(status_code=502, content={"erro": "Tente novamente por favor"})
+        return JSONResponse(
+            status_code=502, content={"erro": "Tente novamente por favor"}
+        )
 
     return JSONResponse(content={"resposta": data.get("resposta", "")})
