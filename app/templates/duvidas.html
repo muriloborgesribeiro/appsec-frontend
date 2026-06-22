@@ -69,6 +69,12 @@
     font-size: 1.2rem; flex-shrink: 0;
 }
 .chat-input-area .btn-send:hover { background: #075e54; }
+.message.bot p { margin-bottom: 4px; }
+.message.bot p:last-child { margin-bottom: 0; }
+.message.bot ul, .message.bot ol { padding-left: 20px; margin-bottom: 4px; margin-top: 2px; }
+.message.bot li { margin-bottom: 2px; }
+.message.bot strong { font-weight: 700; }
+.message.bot a { color: #128c7e; text-decoration: underline; }
 .message.error {
     align-self: center; background: #f8d7da;
     color: #721c24; font-size: 0.8rem;
@@ -121,6 +127,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 (function() {
     var input = document.getElementById('perguntaInput');
@@ -134,11 +141,15 @@
                     now.getMinutes().toString().padStart(2, '0');
         var div = document.createElement('div');
         div.className = 'message ' + type;
-        div.textContent = text;
-        var timeDiv = document.createElement('div');
-        timeDiv.className = 'msg-time';
-        timeDiv.textContent = time;
-        div.appendChild(timeDiv);
+        if (type === 'bot') {
+            div.innerHTML = marked.parse(text) + '<div class="msg-time">' + time + '</div>';
+        } else {
+            div.textContent = text;
+            var timeDiv = document.createElement('div');
+            timeDiv.className = 'msg-time';
+            timeDiv.textContent = time;
+            div.appendChild(timeDiv);
+        }
         messages.insertBefore(div, typing);
         messages.scrollTop = messages.scrollHeight;
     }
@@ -192,6 +203,6 @@
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
-})();
+    })();
 </script>
 {% endblock %}
