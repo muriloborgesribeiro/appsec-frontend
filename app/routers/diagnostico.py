@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import httpx
 from jose import jwt
@@ -87,6 +87,19 @@ async def avaliar(
 
     resultado = resp.json()
 
+    sintomas_items = [
+        ("Dor migratória para FID", dados.get("dor_migratoria", False)),
+        ("Anorexia (perda de apetite)", dados.get("anorexia", False)),
+        ("Náuseas ou vômitos", dados.get("nauseas_vomitos", False)),
+        ("Dor à palpação em FID", dados.get("dor_fid", False)),
+    ]
+    sinais_items = [
+        ("Descompressão dolorosa (Blumberg)", dados.get("descompressao_dolorosa", False)),
+        (f"Temperatura: {dados.get('temperatura', 36.5)} °C", True),
+        (f"Leucócitos: {dados.get('leucocitos', 8000)} /mm³", True),
+        ("Neutrofilia (desvio à esquerda)", dados.get("neutrofilia", False)),
+    ]
+
     return templates.TemplateResponse(
         request,
         "resultado.html",
@@ -96,6 +109,8 @@ async def avaliar(
             "alvarado": resultado.get("alvarado", {}),
             "knn": resultado.get("knn", {}),
             "svm": resultado.get("svm", {}),
+            "sintomas": sintomas_items,
+            "sinais": sinais_items,
         },
     )
 
@@ -150,4 +165,34 @@ async def historico(
                 "resultado_svm": resultado_svm,
             },
         },
+    )
+
+
+@router.delete("/{diagnostico_id}")
+async def remover(
+    request: Request,
+    diagnostico_id: int,
+    user: dict = Depends(_require_role("admin", "professional")),
+):
+    token = request.cookies.get("access_token")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.delete(
+            f"{BACKEND_URL}/api/v1/diagnosticos/{diagnostico_id}",
+            headers=headers,
+        )
+
+    if resp.status_code == 204:
+        return JSONResponse(status_code=204, content=None)
+
+    if resp.status_code == 404:
+        return JSONResponse(
+            status_code=404,
+            content={"detail": "Diagnóstico não encontrado"},
+        )
+
+    return JSONResponse(
+        status_code=resp.status_code,
+        content={"detail": "Erro ao remover diagnóstico"},
     )

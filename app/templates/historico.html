@@ -70,16 +70,24 @@
                         <td>{{ r.id }}</td>
                         <td>{{ r.created_at[:16] if r.created_at else '' }}</td>
                         <td style="font-size:0.85rem; white-space:nowrap">
-                            {% if r.dor_migratoria %}Dor migratória para FID<br>{% endif %}
-                            {% if r.anorexia %}Anorexia (perda de apetite)<br>{% endif %}
-                            {% if r.nauseas_vomitos %}Náuseas ou vômitos<br>{% endif %}
-                            {% if r.dor_fid %}Dor à palpação em FID{% endif %}
+                            {% if r.dor_migratoria is not none %}
+                                {% if r.dor_migratoria %}Dor migratória para FID<br>{% endif %}
+                                {% if r.anorexia %}Anorexia (perda de apetite)<br>{% endif %}
+                                {% if r.nauseas_vomitos %}Náuseas ou vômitos<br>{% endif %}
+                                {% if r.dor_fid %}Dor à palpação em FID{% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td style="font-size:0.85rem; white-space:nowrap">
-                            {% if r.descompressao_dolorosa %}Descompressão dolorosa (Blumberg)<br>{% endif %}
-                            {{ r.temperatura }} °C<br>
-                            {{ r.leucocitos }}/mm³ leucócitos<br>
-                            {% if r.neutrofilia %}Neutrofilia (desvio à esquerda){% endif %}
+                            {% if r.descompressao_dolorosa is not none %}
+                                {% if r.descompressao_dolorosa %}Descompressão dolorosa (Blumberg)<br>{% endif %}
+                                {% if r.temperatura is not none %}{{ r.temperatura }} °C<br>{% endif %}
+                                {% if r.leucocitos is not none %}{{ r.leucocitos }}/mm³ leucócitos<br>{% endif %}
+                                {% if r.neutrofilia %}Neutrofilia (desvio à esquerda){% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td>
                             {% if r.alvarado_score is not none %}
@@ -124,7 +132,7 @@ function confirmarExclusao(id) {
     if (!confirm("Tem certeza que deseja remover o diagn\u00f3stico #" + id + "?")) {
         return;
     }
-    fetch("/api/v1/diagnosticos/" + id, { method: "DELETE" })
+    fetch("/diagnosticos/" + id, { method: "DELETE" })
         .then(function (resp) {
             if (resp.status === 204) {
                 var row = document.getElementById("row-" + id);
