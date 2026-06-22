@@ -38,34 +38,43 @@ async def enviar_pergunta(
     request: Request,
     user: dict = Depends(_require_user),
 ):
-    body = await request.json()
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"erro": "Tente novamente por favor"})
+
     pergunta = body.get("pergunta", "").strip()
     if not pergunta:
-        return JSONResponse(
-            status_code=400,
-            content={"erro": "A pergunta não pode estar vazia"},
-        )
+        return JSONResponse(status_code=400, content={"erro": "Tente novamente por favor"})
 
     token = request.cookies.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
 
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(
-            f"{BACKEND_URL}/api/v1/duvidas",
-            json={"pergunta": pergunta},
-            headers=headers,
-        )
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{BACKEND_URL}/api/v1/duvidas",
+                json={"pergunta": pergunta},
+                headers=headers,
+                timeout=60,
+            )
+    except Exception:
+        return JSONResponse(status_code=502, content={"erro": "Tente novamente por favor"})
 
     if resp.status_code < 200 or resp.status_code >= 300:
         try:
             body_erro = resp.json()
-            mensagem = body_erro.get("detail") or body_erro.get("erro") or "Erro ao processar"
+            mensagem = body_erro.get("detail") or body_erro.get("erro") or "Tente novamente por favor"
         except Exception:
-            mensagem = f"Erro {resp.status_code} do servidor"
+            mensagem = "Tente novamente por favor"
         return JSONResponse(
             status_code=resp.status_code,
             content={"erro": mensagem},
         )
 
-    data = resp.json()
+    try:
+        data = resp.json()
+    except Exception:
+        return JSONResponse(status_code=502, content={"erro": "Tente novamente por favor"})
+
     return JSONResponse(content={"resposta": data.get("resposta", "")})
