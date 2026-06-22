@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import TEMPLATES_DIR, STATIC_DIR, CORS_ORIGINS
+from app.config import BACKEND_URL, TEMPLATES_DIR, STATIC_DIR, CORS_ORIGINS
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
@@ -68,6 +68,11 @@ app.include_router(diagnostico.router)
 app.include_router(metricas.router)
 app.include_router(auth.router)
 app.include_router(duvidas.router)
+
+
+@app.get("/backend-docs")
+async def backend_docs():
+    return RedirectResponse(url=f"{BACKEND_URL}/docs")
 
 
 @app.get("/")
