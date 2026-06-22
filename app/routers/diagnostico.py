@@ -94,7 +94,10 @@ async def avaliar(
         ("Dor à palpação em FID", dados.get("dor_fid", False)),
     ]
     sinais_items = [
-        ("Descompressão dolorosa (Blumberg)", dados.get("descompressao_dolorosa", False)),
+        (
+            "Descompressão dolorosa (Blumberg)",
+            dados.get("descompressao_dolorosa", False),
+        ),
         (f"Temperatura: {dados.get('temperatura', 36.5)} °C", True),
         (f"Leucócitos: {dados.get('leucocitos', 8000)} /mm³", True),
         ("Neutrofilia (desvio à esquerda)", dados.get("neutrofilia", False)),
